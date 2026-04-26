@@ -3,7 +3,7 @@ import { getGroup } from './genderMap.js';
 
 const sheetId = import.meta.env.VITE_SHEET_ID;
 const SHEET_URL = import.meta.env.DEV
-  ? '/leaderboard.csv'
+  ? `${import.meta.env.BASE_URL}leaderboard.csv`
   : `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv`;
 
 export async function fetchData() {
