@@ -7,6 +7,7 @@ export const QUEENS = new Set([
   "Manvi",
   "Marie",
   "Sheetal",
+  "Supreet",
 ]);
 
 export function getGroup(name) {
