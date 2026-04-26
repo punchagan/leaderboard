@@ -10,7 +10,6 @@ export async function fetchData() {
   const res = await fetch(SHEET_URL);
   if (!res.ok) throw new Error(`Failed to fetch sheet: ${res.status}`);
 
-  const title = parseTitleFromHeaders(res.headers);
   const text = await res.text();
   const { data } = Papa.parse(text, { skipEmptyLines: true });
   const all = extractPlayers(data);
@@ -19,7 +18,7 @@ export async function fetchData() {
   console.log('queens:', queens);
   console.log('kings:', kings);
 
-  return { title, queens, kings };
+  return { queens, kings };
 }
 
 function extractPlayers(rows) {
@@ -115,18 +114,4 @@ function rankPlayers(players) {
   }
 
   return ranked;
-}
-
-function parseTitleFromHeaders(headers) {
-  const disposition = headers.get('content-disposition') ?? '';
-  const match =
-    disposition.match(/filename\*=UTF-8''([^;]+)/) ||
-    disposition.match(/filename="([^"]+)"/);
-  const fromHeader = match
-    ? decodeURIComponent(match[1])
-        .replace(/\.csv$/i, '')
-        .replace(/\s*-\s*(public|copy|sheet\d*)$/i, '')
-        .trim()
-    : null;
-  return fromHeader || import.meta.env.VITE_TITLE || 'Leaderboard';
 }
