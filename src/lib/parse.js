@@ -46,7 +46,6 @@ function extractPlayers(rows) {
     const name = row[0]?.trim();
     if (!name) continue;
 
-    const totalPoints = parseFloat(row[1]) || 0;
     const sessions = sessionGroups.map((sg) => {
       const vals = sg.cols.map((c) => parseFloat(row[c] || '') || 0);
       return {
@@ -56,6 +55,10 @@ function extractPlayers(rows) {
         hasData: vals.some((v) => v > 0),
       };
     });
+
+    const totalPoints = sessions.reduce(
+      (sum, s) => sum + s.attendance + s.games.reduce((a, b) => a + b, 0), 0
+    );
 
     players.push({ name, group: getGroup(name), totalPoints, sessions });
   }
