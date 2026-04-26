@@ -1,5 +1,5 @@
-import Papa from 'papaparse';
-import { getGroup } from './genderMap.js';
+import Papa from "papaparse";
+import { getGroup } from "./genderMap.js";
 
 const sheetId = import.meta.env.VITE_SHEET_ID;
 const SHEET_URL = import.meta.env.DEV
@@ -13,10 +13,10 @@ export async function fetchData() {
   const text = await res.text();
   const { data } = Papa.parse(text, { skipEmptyLines: true });
   const all = extractPlayers(data);
-  const queens = rankPlayers(all.filter((p) => p.group === 'queen'));
-  const kings = rankPlayers(all.filter((p) => p.group === 'king'));
-  console.log('queens:', queens);
-  console.log('kings:', kings);
+  const queens = rankPlayers(all.filter((p) => p.group === "queen"));
+  const kings = rankPlayers(all.filter((p) => p.group === "king"));
+  console.log("queens:", queens);
+  console.log("kings:", kings);
 
   return { queens, kings };
 }
@@ -46,7 +46,7 @@ function extractPlayers(rows) {
     if (!name) continue;
 
     const sessions = sessionGroups.map((sg) => {
-      const vals = sg.cols.map((c) => parseFloat(row[c] || '') || 0);
+      const vals = sg.cols.map((c) => parseFloat(row[c] || "") || 0);
       return {
         date: sg.date,
         attendance: vals[0] || 0,
@@ -56,7 +56,8 @@ function extractPlayers(rows) {
     });
 
     const totalPoints = sessions.reduce(
-      (sum, s) => sum + s.attendance + s.games.reduce((a, b) => a + b, 0), 0
+      (sum, s) => sum + s.attendance + s.games.reduce((a, b) => a + b, 0),
+      0,
     );
 
     players.push({ name, group: getGroup(name), totalPoints, sessions });
@@ -67,9 +68,10 @@ function extractPlayers(rows) {
 
 function assignRanks(sorted, pointsKey) {
   sorted.forEach((p, i) => {
-    p.rank = i > 0 && p[pointsKey] === sorted[i - 1][pointsKey]
-      ? sorted[i - 1].rank
-      : i + 1;
+    p.rank =
+      i > 0 && p[pointsKey] === sorted[i - 1][pointsKey]
+        ? sorted[i - 1].rank
+        : i + 1;
   });
 }
 
@@ -85,9 +87,9 @@ function rankPlayers(players) {
 
   // Sort by current points, then name as tiebreaker
   const ranked = [...players].sort(
-    (a, b) => b.totalPoints - a.totalPoints || a.name.localeCompare(b.name)
+    (a, b) => b.totalPoints - a.totalPoints || a.name.localeCompare(b.name),
   );
-  assignRanks(ranked, 'totalPoints');
+  assignRanks(ranked, "totalPoints");
 
   if (hasPriorData) {
     // Compute each player's points before last weekend
@@ -100,17 +102,21 @@ function rankPlayers(players) {
     });
 
     const prevRanked = [...withPrev].sort(
-      (a, b) => b.prevPoints - a.prevPoints || a.name.localeCompare(b.name)
+      (a, b) => b.prevPoints - a.prevPoints || a.name.localeCompare(b.name),
     );
-    assignRanks(prevRanked, 'prevPoints');
-    const prevRankMap = Object.fromEntries(prevRanked.map((p) => [p.name, p.rank]));
+    assignRanks(prevRanked, "prevPoints");
+    const prevRankMap = Object.fromEntries(
+      prevRanked.map((p) => [p.name, p.rank]),
+    );
 
     ranked.forEach((p) => {
       p.prevRank = prevRankMap[p.name] ?? p.rank;
       p.rankChange = p.prevRank - p.rank; // positive = moved up
     });
   } else {
-    ranked.forEach((p) => { p.rankChange = 0; });
+    ranked.forEach((p) => {
+      p.rankChange = 0;
+    });
   }
 
   return ranked;
