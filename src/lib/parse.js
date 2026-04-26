@@ -21,17 +21,23 @@ export async function fetchData() {
 }
 
 function extractPlayers(rows) {
-  const dateRow = rows[0];
+  const numCols = Math.max(rows[0].length, rows[1].length);
+  // row0h: dates and top-level labels; row1h: column types within sessions
+  const row0h = Array.from({ length: numCols }, (_, c) => rows[0][c]?.trim().toLowerCase() || "");
+  const row1h = Array.from({ length: numCols }, (_, c) => rows[1][c]?.trim().toLowerCase() || "");
 
-  // Build session groups: scan row 0 for non-empty date cells starting at col 2
+  const nameCol = row1h.findIndex((h) => h === "name");
+  const genderCol = row1h.findIndex((h) => h === "m/f");
+
+  // Session groups start at columns whose row-0 value looks like a date (DD/MM/YY)
+  const isDate = (v) => /^\d{1,2}\/\d{1,2}\/\d{2,4}$/.test(v);
   const sessionGroups = [];
   let current = null;
-  for (let col = 2; col < dateRow.length; col++) {
-    const val = dateRow[col]?.trim();
-    if (val) {
+  for (let col = 0; col < numCols; col++) {
+    if (isDate(row0h[col])) {
       if (current) sessionGroups.push(current);
-      current = { date: val, cols: [col] };
-    } else if (current) {
+      current = { date: row0h[col], cols: [col] };
+    } else if (current && row1h[col]) {
       current.cols.push(col);
     }
   }
@@ -41,17 +47,20 @@ function extractPlayers(rows) {
   const players = [];
   for (let r = 2; r < rows.length; r++) {
     const row = rows[r];
-    const name = row[0]?.trim();
+    const name = row[nameCol]?.trim();
     if (!name) continue;
-    const group = row[1]?.trim().toLowerCase() === "f" ? "queen" : "king";
+    const group = row[genderCol]?.trim().toLowerCase() === "f" ? "queen" : "king";
 
     const sessions = sessionGroups.map((sg) => {
-      const vals = sg.cols.map((c) => parseFloat(row[c] || "") || 0);
+      const attendanceCol = sg.cols.find((c) => row1h[c] === "attendance");
+      const gameCols = sg.cols.filter((c) => row1h[c].startsWith("game"));
+      const attendance = parseFloat(row[attendanceCol] || "") || 0;
+      const games = gameCols.map((c) => parseFloat(row[c] || "") || 0);
       return {
         date: sg.date,
-        attendance: vals[0] || 0,
-        games: vals.slice(1),
-        hasData: vals.some((v) => v > 0),
+        attendance,
+        games,
+        hasData: attendance > 0 || games.some((v) => v > 0),
       };
     });
 
