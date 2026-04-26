@@ -3,6 +3,6 @@ import { svelte } from '@sveltejs/vite-plugin-svelte'
 import tailwindcss from '@tailwindcss/vite'
 
 export default defineConfig({
-  base: '/leaderboard/',
+  base: '/sdis-leaderboard/',
   plugins: [tailwindcss(), svelte()],
 })
