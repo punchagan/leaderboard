@@ -55,15 +55,17 @@ function extractPlayers(rows) {
       };
     });
 
-    const totalPoints = sessions.reduce(
-      (sum, s) => sum + s.attendance + s.games.reduce((a, b) => a + b, 0),
-      0,
-    );
+    const totalPoints = sessions.reduce((sum, s) => sum + sessionPoints(s), 0);
 
     players.push({ name, group: getGroup(name), totalPoints, sessions });
   }
 
   return players;
+}
+
+function sessionPoints(s) {
+  const gamePts = Math.min(s.games.reduce((a, b) => a + b, 0), 2);
+  return s.attendance + gamePts;
 }
 
 function assignRanks(sorted, pointsKey) {
@@ -96,7 +98,7 @@ function rankPlayers(players) {
     const withPrev = ranked.map((p) => {
       const lastWeekendPts = lastWeekendIndices.reduce((sum, i) => {
         const s = p.sessions[i];
-        return sum + s.attendance + s.games.reduce((a, b) => a + b, 0);
+        return sum + sessionPoints(s);
       }, 0);
       return { ...p, prevPoints: p.totalPoints - lastWeekendPts };
     });
