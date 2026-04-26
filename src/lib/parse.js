@@ -1,5 +1,4 @@
 import Papa from "papaparse";
-import { getGroup } from "./genderMap.js";
 
 const sheetId = import.meta.env.VITE_SHEET_ID;
 const SHEET_URL = import.meta.env.DEV
@@ -44,6 +43,7 @@ function extractPlayers(rows) {
     const row = rows[r];
     const name = row[0]?.trim();
     if (!name) continue;
+    const group = row[1]?.trim().toLowerCase() === "f" ? "queen" : "king";
 
     const sessions = sessionGroups.map((sg) => {
       const vals = sg.cols.map((c) => parseFloat(row[c] || "") || 0);
@@ -57,7 +57,7 @@ function extractPlayers(rows) {
 
     const totalPoints = sessions.reduce((sum, s) => sum + sessionPoints(s), 0);
 
-    players.push({ name, group: getGroup(name), totalPoints, sessions });
+    players.push({ name, group, totalPoints, sessions });
   }
 
   return players;
