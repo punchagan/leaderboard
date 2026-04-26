@@ -63,7 +63,7 @@ function extractPlayers(rows) {
   return players;
 }
 
-function sessionPoints(s) {
+export function sessionPoints(s) {
   const gamePts = Math.min(s.games.reduce((a, b) => a + b, 0), 2);
   return s.attendance + gamePts;
 }

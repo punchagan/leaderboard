@@ -1,5 +1,6 @@
 <script>
   import { slide } from "svelte/transition";
+  import { sessionPoints } from "./parse.js";
 
   let { player, accent } = $props();
   let expanded = $state(false);
@@ -112,17 +113,20 @@
       <div class="flex items-center gap-3 text-xs text-slate-400">
         <span class="w-16 shrink-0">{formatDate(s.date)}</span>
         <span class="flex gap-1">
-          {#each s.games as g}
+          {#each s.games as g, i}
+            {@const countedSoFar = s.games.slice(0, i).reduce((a, b) => a + b, 0)}
+            {@const capped = countedSoFar >= 2}
             <span
-              title={g ? "Win" : "Loss"}
-              style={g ? `color: ${accent}` : ""}
+              title={g ? (capped ? "Win (capped)" : "Win") : "Loss"}
+              style={g && !capped ? `color: ${accent}` : ""}
+              class={g && capped ? "opacity-25" : ""}
             >
               {g ? "●" : "○"}
             </span>
           {/each}
         </span>
         <span class="ml-auto tabular-nums" style="color: {accent}">
-          +{s.attendance + s.games.reduce((a, b) => a + b, 0)}
+          +{sessionPoints(s)}
         </span>
       </div>
     {/each}
