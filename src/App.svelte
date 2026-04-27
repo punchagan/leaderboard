@@ -4,13 +4,17 @@
 
   let queens = $state([]);
   let kings = $state([]);
+  let loading = $state(true);
   $effect(() => {
     fetchData()
       .then((data) => {
         queens = data.queens;
         kings = data.kings;
       })
-      .catch(console.error);
+      .catch(console.error)
+      .finally(() => {
+        loading = false;
+      });
   });
 </script>
 
@@ -22,8 +26,8 @@
   />
 
   <div class="flex flex-col gap-12">
-    <Leaderboard players={queens} label="♛ Queens" accent="#f472b6" />
+    <Leaderboard players={queens} label="♛ Queens" accent="#f472b6" {loading} />
     <div class="max-w-sm mx-auto w-full border-t border-slate-800"></div>
-    <Leaderboard players={kings} label="♚ Kings" accent="#38bdf8" />
+    <Leaderboard players={kings} label="♚ Kings" accent="#38bdf8" {loading} />
   </div>
 </main>
